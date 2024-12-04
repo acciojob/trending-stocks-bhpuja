@@ -1,16 +1,27 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="en">
 <head>
-	<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trending Stocks</title>
 </head>
-
 <body>
-	<!-- the entire body must be written by student -->
-    <script type="text/javascript" src="./script.js">
-</script>
+  <h1>Trending Stocks</h1>
+  <p>Check the console for results!</p>
+  <script>
+    async function trendingStocks(n) {
+      if (n <= 0) return [];
 
-</body>
+      try {
+        // Fetch all APIs in parallel
+        const symbolsPromise = fetch('https://api.frontendexpert.io/api/fe/stock-symbols').then(res => res.json());
+        const pricesPromise = fetch('https://api.frontendexpert.io/api/fe/stock-prices?symbols=' + encodeURIComponent(JSON.stringify([]))).then(res => res.json());
+        const marketCapsPromise = fetch('https://api.frontendexpert.io/api/fe/stock-market-caps').then(res => res.json());
 
-</html>
+        // Wait for all promises
+        const [symbolsData, marketCapsData, pricesData] = await Promise.all([symbolsPromise, pricesPromise, marketCapsPromise]);
+
+
+
+
+<!-- Replace JavaScript Reference Generater JS Ref -->
