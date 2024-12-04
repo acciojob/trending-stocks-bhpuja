@@ -7,21 +7,47 @@
 </head>
 <body>
   <h1>Trending Stocks</h1>
-  <p>Check the console for results!</p>
+  <p>Open the console to see the results of the `trendingStocks` function.</p>
+
   <script>
     async function trendingStocks(n) {
-      if (n <= 0) return [];
+      if (n === 0) return [];
 
-      try {
-        // Fetch all APIs in parallel
-        const symbolsPromise = fetch('https://api.frontendexpert.io/api/fe/stock-symbols').then(res => res.json());
-        const pricesPromise = fetch('https://api.frontendexpert.io/api/fe/stock-prices?symbols=' + encodeURIComponent(JSON.stringify([]))).then(res => res.json());
-        const marketCapsPromise = fetch('https://api.frontendexpert.io/api/fe/stock-market-caps').then(res => res.json());
+      // Fetch data from all APIs concurrently
+      const symbolsPromise = fetch('https://api.frontendexpert.io/api/fe/stock-symbols').then(res => res.json());
+      const pricesPromise = fetch('https://api.frontendexpert.io/api/fe/stock-prices?symbols=[]').then(res => res.json());
+      const marketCapsPromise = fetch('https://api.frontendexpert.io/api/fe/stock-market-caps').then(res => res.json());
 
-        // Wait for all promises
-        const [symbolsData, marketCapsData, pricesData] = await Promise.all([symbolsPromise, pricesPromise, marketCapsPromise]);
+      // Wait for all promises to resolve
+      const [symbols, prices, marketCaps] = await Promise.all([symbolsPromise, pricesPromise, marketCapsPromise]);
 
+      // Sort by market cap and pick top n stocks
+      const topSymbols = marketCaps
+        .sort((a, b) => b['market-cap'] - a['market-cap'])
+        .slice(0, n);
 
+      // Create a map for efficient lookups
+      const pricesMap = Object.fromEntries(prices.map(stock => [stock.symbol, stock]));
+      const symbolsMap = Object.fromEntries(symbols.map(stock => [stock.symbol, stock]));
 
+      // Build the result array
+      const result = topSymbols.map(stock => {
+        const symbol = stock.symbol;
+        return {
+          name: symbolsMap[symbol]?.name || '',
+          symbol: symbol,
+          price: pricesMap[symbol]?.price || null,
+          '52-week-high': pricesMap[symbol]?.['52-week-high'] || null,
+          '52-week-low': pricesMap[symbol]?.['52-week-low'] || null,
+          'market-cap': stock['market-cap']
+        };
+      });
 
-<!-- Replace JavaScript Reference Generater JS Ref -->
+      return result;
+    }
+
+    // Example Usage
+    trendingStocks(2).then(data => console.log(data));
+  </script>
+</body>
+</html>
